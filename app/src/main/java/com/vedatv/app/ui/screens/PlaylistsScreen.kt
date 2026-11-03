@@ -1,8 +1,11 @@
 package com.vedatv.app.ui.screens
 
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -19,6 +22,7 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -29,8 +33,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -43,8 +47,20 @@ fun PlaylistsScreen(
     onOpenPlaylist: (Long) -> Unit,
     viewModel: PlaylistsViewModel = viewModel()
 ) {
+    val context = LocalContext.current
     val playlists by viewModel.playlists
     var showAddDialog by remember { mutableStateOf(false) }
+
+    val filePicker = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.OpenDocument()
+    ) { uri ->
+        uri?.let {
+            context.contentResolver.openInputStream(it)?.use { stream ->
+                val content = stream.bufferedReader().use { reader -> reader.readText() }
+                viewModel.importFromFile("Локальный плейлист", content)
+            }
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -61,6 +77,17 @@ fun PlaylistsScreen(
                 .fillMaxSize()
                 .padding(padding)
         ) {
+            OutlinedButton(
+                onClick = {
+                    filePicker.launch(arrayOf("*/*"))
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp)
+            ) {
+                Text("Импортировать .m3u файл")
+            }
+
             if (playlists.isEmpty()) {
                 Text(
                     text = stringResource(R.string.no_playlists),
@@ -87,7 +114,7 @@ fun PlaylistsScreen(
                                 style = MaterialTheme.typography.bodySmall,
                                 maxLines = 1
                             )
-                            androidx.compose.foundation.layout.Row(
+                            Row(
                                 modifier = Modifier.fillMaxWidth(),
                                 horizontalArrangement = Arrangement.End
                             ) {
@@ -108,8 +135,8 @@ fun PlaylistsScreen(
     if (showAddDialog) {
         AddPlaylistDialog(
             onDismiss = { showAddDialog = false },
-            onSave = { name, url ->
-                viewModel.addPlaylist(name, url)
+            onSave = { name, url, epgUrl ->
+                viewModel.addPlaylist(name, url, epgUrl)
                 showAddDialog = false
             }
         )
@@ -119,10 +146,11 @@ fun PlaylistsScreen(
 @Composable
 private fun AddPlaylistDialog(
     onDismiss: () -> Unit,
-    onSave: (String, String) -> Unit
+    onSave: (String, String, String) -> Unit
 ) {
     var name by remember { mutableStateOf("") }
     var url by remember { mutableStateOf("") }
+    var epgUrl by remember { mutableStateOf("") }
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -141,13 +169,19 @@ private fun AddPlaylistDialog(
                     label = { Text(stringResource(R.string.playlist_url)) },
                     modifier = Modifier.fillMaxWidth()
                 )
+                OutlinedTextField(
+                    value = epgUrl,
+                    onValueChange = { epgUrl = it },
+                    label = { Text("XMLTV EPG ссылка (необязательно)") },
+                    modifier = Modifier.fillMaxWidth()
+                )
             }
         },
         confirmButton = {
             TextButton(
                 onClick = {
                     if (name.isNotBlank() && url.isNotBlank()) {
-                        onSave(name.trim(), url.trim())
+                        onSave(name.trim(), url.trim(), epgUrl.trim())
                     }
                 }
             ) {

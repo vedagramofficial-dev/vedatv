@@ -6,6 +6,8 @@ import androidx.lifecycle.viewModelScope
 import com.vedatv.app.VedaTvApp
 import com.vedatv.app.data.db.PlaylistEntity
 import com.vedatv.app.data.repository.IptvRepository
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
@@ -14,11 +16,12 @@ class PlaylistsViewModel(application: Application) : AndroidViewModel(applicatio
 
     private val repository = IptvRepository(
         playlistDao = (application as VedaTvApp).database.playlistDao(),
-        channelDao = application.database.channelDao()
+        channelDao = application.database.channelDao(),
+        epgDao = application.database.epgDao()
     )
 
-    private val _playlists = androidx.compose.runtime.mutableStateOf<List<PlaylistEntity>>(emptyList())
-    val playlists: androidx.compose.runtime.State<List<PlaylistEntity>> = _playlists
+    private val _playlists = MutableStateFlow<List<PlaylistEntity>>(emptyList())
+    val playlists: StateFlow<List<PlaylistEntity>> = _playlists
 
     init {
         repository.observePlaylists()
@@ -26,9 +29,20 @@ class PlaylistsViewModel(application: Application) : AndroidViewModel(applicatio
             .launchIn(viewModelScope)
     }
 
-    fun addPlaylist(name: String, url: String) {
+    fun addPlaylist(name: String, url: String, epgUrl: String = "") {
         viewModelScope.launch {
             repository.addPlaylist(name, url)
+                .onSuccess {
+                    if (epgUrl.isNotBlank()) {
+                        repository.refreshEpg(epgUrl)
+                    }
+                }
+        }
+    }
+
+    fun importFromFile(name: String, content: String) {
+        viewModelScope.launch {
+            repository.importPlaylistFromFile(name, content)
         }
     }
 
