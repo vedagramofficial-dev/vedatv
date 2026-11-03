@@ -7,6 +7,7 @@ import com.vedatv.app.data.db.PlaylistEntity
 import com.vedatv.app.data.m3u.M3UParser
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
 import java.net.URL
 
@@ -46,10 +47,27 @@ class IptvRepository(
     }
 
     private suspend fun refreshPlaylist(playlistId: Long, url: String) {
+        val oldChannels = channelDao.observeChannels(playlistId).first()
+        val favoriteKeys = oldChannels
+            .filter { it.isFavorite }
+            .map { it.name to it.url }
+            .toSet()
+
+        val watchedAtByKey = oldChannels
+            .filter { it.lastWatchedAt > 0 }
+            .associate { (it.name to it.url) to it.lastWatchedAt }
+
         val text = URL(url).readText()
-        val channels = M3UParser.parse(text, playlistId)
+        val newChannels = M3UParser.parse(text, playlistId).map { channel ->
+            val key = channel.name to channel.url
+            channel.copy(
+                isFavorite = key in favoriteKeys,
+                lastWatchedAt = watchedAtByKey[key] ?: 0L
+            )
+        }
+
         playlistDao.deleteChannels(playlistId)
-        channelDao.insertAll(channels)
+        channelDao.insertAll(newChannels)
     }
 
     suspend fun deletePlaylist(playlist: PlaylistEntity) {
