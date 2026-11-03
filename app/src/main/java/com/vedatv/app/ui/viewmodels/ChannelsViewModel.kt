@@ -16,7 +16,8 @@ class ChannelsViewModel(application: Application) : AndroidViewModel(application
 
     private val repository = IptvRepository(
         playlistDao = (application as VedaTvApp).database.playlistDao(),
-        channelDao = application.database.channelDao()
+        channelDao = application.database.channelDao(),
+        epgDao = application.database.epgDao()
     )
 
     private val _channels = androidx.compose.runtime.mutableStateOf<List<ChannelEntity>>(emptyList())

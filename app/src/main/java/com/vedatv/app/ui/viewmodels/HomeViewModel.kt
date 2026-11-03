@@ -16,7 +16,8 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
 
     private val repository = IptvRepository(
         playlistDao = (application as VedaTvApp).database.playlistDao(),
-        channelDao = application.database.channelDao()
+        channelDao = application.database.channelDao(),
+        epgDao = application.database.epgDao()
     )
 
     val playlists: StateFlow<List<PlaylistEntity>> = repository.observePlaylists()
