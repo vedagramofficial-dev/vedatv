@@ -24,6 +24,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -43,9 +44,9 @@ fun HomeScreen(
     onPlayChannel: (ChannelEntity) -> Unit,
     viewModel: HomeViewModel = viewModel()
 ) {
-    val playlists by viewModel.playlists
-    val favorites by viewModel.favorites
-    val recent by viewModel.recentlyWatched
+    val playlists by viewModel.playlists.collectAsState()
+    val favorites by viewModel.favorites.collectAsState()
+    val recent by viewModel.recentlyWatched.collectAsState()
 
     Scaffold(
         topBar = {

@@ -29,6 +29,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -48,7 +49,7 @@ fun PlaylistsScreen(
     viewModel: PlaylistsViewModel = viewModel()
 ) {
     val context = androidx.compose.ui.platform.LocalContext.current
-    val playlists by viewModel.playlists
+    val playlists by viewModel.playlists.collectAsState()
     var showAddDialog by remember { mutableStateOf(false) }
 
     val filePicker = rememberLauncherForActivityResult(

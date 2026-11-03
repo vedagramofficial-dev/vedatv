@@ -25,6 +25,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -64,8 +65,8 @@ fun PlayerScreen(
         epgViewModel.load(channelTvgId)
     }
 
-    val currentProgram by epgViewModel.currentProgram
-    val programs by epgViewModel.programs
+    val currentProgram by epgViewModel.currentProgram.collectAsState()
+    val programs by epgViewModel.programs.collectAsState()
 
     val player = remember(channelUrl, retryToken, catchUpOffset) {
         ExoPlayer.Builder(context)

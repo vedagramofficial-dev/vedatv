@@ -36,6 +36,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -59,7 +60,7 @@ fun ChannelsScreen(
     onPlayChannel: (ChannelEntity) -> Unit,
     viewModel: ChannelsViewModel = viewModel()
 ) {
-    val channels by viewModel.channels
+    val channels by viewModel.channels.collectAsState()
     var query by remember { mutableStateOf("") }
     var selectedGroup by remember { mutableStateOf("Все") }
     var showFavoritesOnly by remember { mutableStateOf(false) }
