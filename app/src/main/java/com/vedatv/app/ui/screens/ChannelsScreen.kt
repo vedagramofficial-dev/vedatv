@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -17,6 +18,7 @@ import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -37,6 +39,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import com.vedatv.app.R
+import com.vedatv.app.data.db.ChannelEntity
 import com.vedatv.app.ui.viewmodels.ChannelsViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -49,9 +52,29 @@ fun ChannelsScreen(
 ) {
     val channels by viewModel.channels
     var query by remember { mutableStateOf("") }
+    var selectedGroup by remember { mutableStateOf("Все") }
+    var showFavoritesOnly by remember { mutableStateOf(false) }
 
     LaunchedEffect(playlistId) {
         viewModel.load(playlistId)
+    }
+
+    val groups = remember(channels) {
+        listOf("Все") + channels.map { it.group }
+            .filter { it.isNotBlank() }
+            .distinct()
+            .sorted()
+    }
+
+    val visibleChannels = remember(channels, selectedGroup, query, showFavoritesOnly) {
+        channels.filter { channel ->
+            val matchesGroup = selectedGroup == "Все" || channel.group == selectedGroup
+            val matchesQuery = query.isBlank() ||
+                channel.name.contains(query, ignoreCase = true) ||
+                channel.group.contains(query, ignoreCase = true)
+            val matchesFavorite = !showFavoritesOnly || channel.isFavorite
+            matchesGroup && matchesQuery && matchesFavorite
+        }
     }
 
     Scaffold(
@@ -61,6 +84,18 @@ fun ChannelsScreen(
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null)
+                    }
+                },
+                actions = {
+                    IconButton(onClick = { showFavoritesOnly = !showFavoritesOnly }) {
+                        Icon(
+                            imageVector = if (showFavoritesOnly) {
+                                Icons.Default.Favorite
+                            } else {
+                                Icons.Default.FavoriteBorder
+                            },
+                            contentDescription = stringResource(R.string.favorites)
+                        )
                     }
                 }
             )
@@ -73,66 +108,96 @@ fun ChannelsScreen(
         ) {
             OutlinedTextField(
                 value = query,
-                onValueChange = {
-                    query = it
-                    viewModel.search(playlistId, it)
-                },
+                onValueChange = { query = it },
                 label = { Text(stringResource(R.string.search)) },
                 leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
+                singleLine = true,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(16.dp)
+                    .padding(horizontal = 16.dp, vertical = 8.dp)
             )
 
-            if (channels.isEmpty()) {
+            LazyRow(
+                contentPadding = PaddingValues(horizontal = 16.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                items(groups) { group ->
+                    FilterChip(
+                        selected = group == selectedGroup,
+                        onClick = { selectedGroup = group },
+                        label = { Text(group) }
+                    )
+                }
+            }
+
+            if (visibleChannels.isEmpty()) {
                 Text(
                     text = stringResource(R.string.no_channels),
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(32.dp)
+                        .padding(32.dp),
+                    style = MaterialTheme.typography.bodyLarge
                 )
             }
 
             LazyColumn(
-                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+                contentPadding = PaddingValues(16.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                items(channels, key = { it.id }) { channel ->
-                    Card(
-                        modifier = Modifier.fillMaxWidth(),
-                        onClick = { onPlayChannel(channel.name, channel.url) }
-                    ) {
-                        Row(
-                            modifier = Modifier.padding(12.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(12.dp)
-                        ) {
-                            AsyncImage(
-                                model = channel.logo.ifBlank { null },
-                                contentDescription = null,
-                                modifier = Modifier.size(44.dp)
-                            )
-                            Column(modifier = Modifier.weight(1f)) {
-                                Text(channel.name, style = MaterialTheme.typography.titleSmall)
-                                Text(
-                                    channel.group,
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                            }
-                            IconButton(onClick = { viewModel.toggleFavorite(channel) }) {
-                                Icon(
-                                    imageVector = if (channel.isFavorite) {
-                                        Icons.Default.Favorite
-                                    } else {
-                                        Icons.Default.FavoriteBorder
-                                    },
-                                    contentDescription = stringResource(R.string.favorites)
-                                )
-                            }
-                        }
-                    }
+                items(visibleChannels, key = { it.id }) { channel ->
+                    ChannelCard(
+                        channel = channel,
+                        onClick = { onPlayChannel(channel.name, channel.url) },
+                        onFavoriteClick = { viewModel.toggleFavorite(channel) }
+                    )
                 }
+            }
+        }
+    }
+}
+
+@Composable
+private fun ChannelCard(
+    channel: ChannelEntity,
+    onClick: () -> Unit,
+    onFavoriteClick: () -> Unit
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        onClick = onClick
+    ) {
+        Row(
+            modifier = Modifier.padding(12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            AsyncImage(
+                model = channel.logo.ifBlank { null },
+                contentDescription = null,
+                modifier = Modifier.size(48.dp)
+            )
+
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = channel.name,
+                    style = MaterialTheme.typography.titleSmall
+                )
+                Text(
+                    text = channel.group,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+
+            IconButton(onClick = onFavoriteClick) {
+                Icon(
+                    imageVector = if (channel.isFavorite) {
+                        Icons.Default.Favorite
+                    } else {
+                        Icons.Default.FavoriteBorder
+                    },
+                    contentDescription = stringResource(R.string.favorites)
+                )
             }
         }
     }
