@@ -25,7 +25,11 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -44,9 +48,9 @@ fun ChannelsScreen(
     viewModel: ChannelsViewModel = viewModel()
 ) {
     val channels by viewModel.channels
-    var query by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf("") }
+    var query by remember { mutableStateOf("") }
 
-    androidx.compose.runtime.LaunchedEffect(playlistId) {
+    LaunchedEffect(playlistId) {
         viewModel.load(playlistId)
     }
 
