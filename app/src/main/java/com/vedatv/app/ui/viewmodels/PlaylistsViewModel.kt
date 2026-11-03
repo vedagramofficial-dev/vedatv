@@ -1,8 +1,7 @@
 package com.vedatv.app.ui.viewmodels
 
-import androidx.compose.runtime.State
-import androidx.compose.runtime.mutableStateOf
-import androidx.lifecycle.ViewModel
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.vedatv.app.VedaTvApp
 import com.vedatv.app.data.db.PlaylistEntity
@@ -11,15 +10,15 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 
-class PlaylistsViewModel : ViewModel() {
+class PlaylistsViewModel(application: Application) : AndroidViewModel(application) {
 
     private val repository = IptvRepository(
-        playlistDao = VedaTvAppProvider.database.playlistDao(),
-        channelDao = VedaTvAppProvider.database.channelDao()
+        playlistDao = (application as VedaTvApp).database.playlistDao(),
+        channelDao = application.database.channelDao()
     )
 
-    private val _playlists = mutableStateOf<List<PlaylistEntity>>(emptyList())
-    val playlists: State<List<PlaylistEntity>> = _playlists
+    private val _playlists = androidx.compose.runtime.mutableStateOf<List<PlaylistEntity>>(emptyList())
+    val playlists: androidx.compose.runtime.State<List<PlaylistEntity>> = _playlists
 
     init {
         repository.observePlaylists()
@@ -44,13 +43,4 @@ class PlaylistsViewModel : ViewModel() {
             repository.deletePlaylist(playlist)
         }
     }
-}
-
-object VedaTvAppProvider {
-    val database: com.vedatv.app.data.db.AppDatabase
-        get() = VedaTvAppHolder.database
-}
-
-object VedaTvAppHolder {
-    lateinit var database: com.vedatv.app.data.db.AppDatabase
 }

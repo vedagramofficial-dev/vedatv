@@ -14,11 +14,8 @@ VedaTV — современный IPTV-плеер для Android. Приложе
 
 ## Сборка
 
-```bash
-./gradlew assembleDebug
-```
-
-Готовый debug-APK появится в артефактах GitHub Actions после каждого push в ветку `main`.
+GitHub Actions автоматически собирает debug-APK при каждом push в ветку `main`.
+Готовый файл появится во вкладке **Actions → Build VedaTV APK → Artifacts** под именем `vedatv-debug-apk`.
 
 ## Важно
 

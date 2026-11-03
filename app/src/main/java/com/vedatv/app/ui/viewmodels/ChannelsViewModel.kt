@@ -1,27 +1,26 @@
 package com.vedatv.app.ui.viewmodels
 
-import androidx.compose.runtime.State
-import androidx.compose.runtime.mutableStateOf
-import androidx.lifecycle.ViewModel
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.vedatv.app.VedaTvApp
 import com.vedatv.app.data.db.ChannelEntity
 import com.vedatv.app.data.repository.IptvRepository
-import com.vedatv.app.ui.viewmodels.VedaTvAppProvider
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 
-class ChannelsViewModel : ViewModel() {
+class ChannelsViewModel(application: Application) : AndroidViewModel(application) {
 
     private val repository = IptvRepository(
-        playlistDao = VedaTvAppProvider.database.playlistDao(),
-        channelDao = VedaTvAppProvider.database.channelDao()
+        playlistDao = (application as VedaTvApp).database.playlistDao(),
+        channelDao = application.database.channelDao()
     )
 
-    private val _channels = mutableStateOf<List<ChannelEntity>>(emptyList())
-    val channels: State<List<ChannelEntity>> = _channels
+    private val _channels = androidx.compose.runtime.mutableStateOf<List<ChannelEntity>>(emptyList())
+    val channels: androidx.compose.runtime.State<List<ChannelEntity>> = _channels
 
     private var currentJob: Job? = null
 
