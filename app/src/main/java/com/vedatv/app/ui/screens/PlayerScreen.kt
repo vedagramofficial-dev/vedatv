@@ -41,6 +41,7 @@ import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.ui.PlayerView
+import com.vedatv.app.data.db.EpgProgramEntity
 import com.vedatv.app.ui.viewmodels.EpgViewModel
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -58,6 +59,7 @@ fun PlayerScreen(
     val context = LocalContext.current
     var errorMessage by remember { mutableStateOf<String?>(null) }
     var retryToken by remember { mutableStateOf(0) }
+    var catchUpOffset by remember { mutableStateOf(0L) }
 
     LaunchedEffect(channelTvgId) {
         epgViewModel.load(channelTvgId)
@@ -66,13 +68,17 @@ fun PlayerScreen(
     val currentProgram by epgViewModel.currentProgram
     val programs by epgViewModel.programs
 
-    val player = remember(channelUrl, retryToken) {
+    val player = remember(channelUrl, retryToken, catchUpOffset) {
         ExoPlayer.Builder(context)
             .build()
             .apply {
                 setMediaItem(MediaItem.fromUri(channelUrl))
                 prepare()
                 playWhenReady = true
+
+                if (catchUpOffset > 0) {
+                    seekTo(catchUpOffset)
+                }
 
                 addListener(object : Player.Listener {
                     override fun onPlayerError(error: PlaybackException) {
@@ -179,6 +185,26 @@ fun PlayerScreen(
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
+
+                        if (catchUpOffset == 0L) {
+                            Button(
+                                onClick = {
+                                    catchUpOffset = epgViewModel.getCatchUpOffset(program)
+                                },
+                                modifier = Modifier.padding(top = 12.dp)
+                            ) {
+                                Text("Смотреть с начала")
+                            }
+                        } else {
+                            Button(
+                                onClick = {
+                                    catchUpOffset = 0L
+                                },
+                                modifier = Modifier.padding(top = 12.dp)
+                            ) {
+                                Text("Вернуться к прямому эфиру")
+                            }
+                        }
                     }
                 }
             }
@@ -196,22 +222,41 @@ fun PlayerScreen(
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     items(programs) { program ->
-                        Card(modifier = Modifier.fillMaxWidth()) {
-                            Column(modifier = Modifier.padding(12.dp)) {
-                                Text(
-                                    text = formatTime(program.startTime) + " — " +
-                                        formatTime(program.endTime),
-                                    style = MaterialTheme.typography.labelSmall,
-                                    color = MaterialTheme.colorScheme.primary
-                                )
-                                Text(
-                                    text = program.title,
-                                    style = MaterialTheme.typography.bodyLarge
-                                )
+                        ProgramCard(
+                            program = program,
+                            onWatchFromStart = {
+                                catchUpOffset = epgViewModel.getCatchUpOffset(program)
                             }
-                        }
+                        )
                     }
                 }
+            }
+        }
+    }
+}
+
+@Composable
+private fun ProgramCard(
+    program: EpgProgramEntity,
+    onWatchFromStart: () -> Unit
+) {
+    Card(modifier = Modifier.fillMaxWidth()) {
+        Column(modifier = Modifier.padding(12.dp)) {
+            Text(
+                text = formatTime(program.startTime) + " — " + formatTime(program.endTime),
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.primary
+            )
+            Text(
+                text = program.title,
+                style = MaterialTheme.typography.bodyLarge
+            )
+
+            Button(
+                onClick = onWatchFromStart,
+                modifier = Modifier.padding(top = 8.dp)
+            ) {
+                Text("Смотреть с начала")
             }
         }
     }

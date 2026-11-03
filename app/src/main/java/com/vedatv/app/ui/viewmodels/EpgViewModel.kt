@@ -43,4 +43,13 @@ class EpgViewModel(application: Application) : AndroidViewModel(application) {
             repository.refreshEpg(xmlTvUrl)
         }
     }
+
+    fun getCatchUpOffset(program: EpgProgramEntity): Long {
+        val now = System.currentTimeMillis()
+        return if (program.endTime > now) {
+            now - program.startTime
+        } else {
+            program.endTime - program.startTime
+        }
+    }
 }
