@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">VedaTV</string>
+    <string name="playlists">Плейлисты</string>
+    <string name="add_playlist">Добавить плейлист</string>
+    <string name="playlist_name">Название</string>
+    <string name="playlist_url">Ссылка на M3U / M3U8</string>
+    <string name="save">Сохранить</string>
+    <string name="cancel">Отмена</string>
+    <string name="delete">Удалить</string>
+    <string name="refresh">Обновить</string>
+    <string name="channels">Каналы</string>
+    <string name="search">Поиск каналов</string>
+    <string name="favorites">Избранное</string>
+    <string name="all_channels">Все каналы</string>
+    <string name="no_playlists">Плейлистов пока нет</string>
+    <string name="no_channels">Каналы не найдены</string>
+    <string name="loading">Загрузка…</string>
+    <string name="error">Ошибка загрузки плейлиста</string>
+    <string name="empty_name">Введите название</string>
+    <string name="empty_url">Введите ссылку</string>
+</resources>
