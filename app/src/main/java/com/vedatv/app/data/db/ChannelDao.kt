@@ -12,6 +12,12 @@ interface ChannelDao {
     @Query("SELECT * FROM channels WHERE playlistId = :playlistId ORDER BY name")
     fun observeChannels(playlistId: Long): Flow<List<ChannelEntity>>
 
+    @Query(
+        "SELECT * FROM channels WHERE playlistId = :playlistId AND " +
+            "(name LIKE '%' || :query || '%' OR `group` LIKE '%' || :query || '%') ORDER BY name"
+    )
+    fun searchChannels(playlistId: Long, query: String): Flow<List<ChannelEntity>>
+
     @Query("SELECT * FROM channels WHERE isFavorite = 1 ORDER BY name")
     fun observeFavorites(): Flow<List<ChannelEntity>>
 
