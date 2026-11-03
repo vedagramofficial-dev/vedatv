@@ -9,6 +9,8 @@ object M3UParser {
         var currentName = ""
         var currentGroup = ""
         var currentLogo = ""
+        var currentCountry = ""
+        var currentLanguage = ""
 
         text.lines().forEach { rawLine ->
             val line = rawLine.trim()
@@ -18,6 +20,8 @@ object M3UParser {
                     currentName = extractTitle(line)
                     currentGroup = extractAttribute(line, "group-title")
                     currentLogo = extractAttribute(line, "tvg-logo")
+                    currentCountry = extractAttribute(line, "tvg-country")
+                    currentLanguage = extractAttribute(line, "tvg-language")
                 }
 
                 line.isNotEmpty() && !line.startsWith("#") -> {
@@ -27,12 +31,16 @@ object M3UParser {
                             name = currentName,
                             group = currentGroup.ifBlank { "Без категории" },
                             logo = currentLogo,
-                            url = line
+                            url = line,
+                            country = currentCountry,
+                            language = currentLanguage
                         )
                     }
                     currentName = ""
                     currentGroup = ""
                     currentLogo = ""
+                    currentCountry = ""
+                    currentLanguage = ""
                 }
             }
         }
@@ -41,8 +49,7 @@ object M3UParser {
     }
 
     private fun extractTitle(line: String): String {
-        val afterComma = line.substringAfterLast(',')
-        return afterComma.trim().ifBlank { "Без названия" }
+        return line.substringAfterLast(',').trim().ifBlank { "Без названия" }
     }
 
     private fun extractAttribute(line: String, key: String): String {

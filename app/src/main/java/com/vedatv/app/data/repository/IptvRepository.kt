@@ -20,10 +20,14 @@ class IptvRepository(
     fun observeChannels(playlistId: Long): Flow<List<ChannelEntity>> =
         channelDao.observeChannels(playlistId)
 
-    fun searchChannels(playlistId: Long, query: String): Flow<List<ChannelEntity>> =
-        channelDao.searchChannels(playlistId, query)
-
     fun observeFavorites(): Flow<List<ChannelEntity>> = channelDao.observeFavorites()
+
+    fun observeRecentlyWatched(): Flow<List<ChannelEntity>> =
+        channelDao.observeRecentlyWatched()
+
+    fun observeCountries(): Flow<List<String>> = channelDao.observeCountries()
+
+    fun observeLanguages(): Flow<List<String>> = channelDao.observeLanguages()
 
     suspend fun addPlaylist(name: String, url: String): Result<Long> = withContext(Dispatchers.IO) {
         runCatching {
@@ -55,5 +59,9 @@ class IptvRepository(
 
     suspend fun toggleFavorite(channel: ChannelEntity) {
         channelDao.setFavorite(channel.id, !channel.isFavorite)
+    }
+
+    suspend fun markWatched(channel: ChannelEntity) {
+        channelDao.markWatched(channel.id, System.currentTimeMillis())
     }
 }

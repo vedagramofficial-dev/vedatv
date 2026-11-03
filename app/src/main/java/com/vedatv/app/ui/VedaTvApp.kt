@@ -1,13 +1,13 @@
 package com.vedatv.app.ui
 
 import androidx.compose.runtime.Composable
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import androidx.navigation.NavType
 import com.vedatv.app.ui.screens.ChannelsScreen
-import com.vedatv.app.ui.screens.PlaylistsScreen
+import com.vedatv.app.ui.screens.HomeScreen
 import com.vedatv.app.ui.screens.PlayerScreen
 import java.net.URLEncoder
 
@@ -15,9 +15,25 @@ import java.net.URLEncoder
 fun VedaTvApp() {
     val navController = rememberNavController()
 
-    NavHost(navController = navController, startDestination = "playlists") {
+    NavHost(navController = navController, startDestination = "home") {
+        composable("home") {
+            HomeScreen(
+                onOpenPlaylist = { playlistId ->
+                    navController.navigate("channels/$playlistId")
+                },
+                onAddPlaylist = {
+                    navController.navigate("playlists")
+                },
+                onPlayChannel = { name, url ->
+                    val encodedName = URLEncoder.encode(name, "UTF-8")
+                    val encodedUrl = URLEncoder.encode(url, "UTF-8")
+                    navController.navigate("player/$encodedName/$encodedUrl")
+                }
+            )
+        }
+
         composable("playlists") {
-            PlaylistsScreen(
+            com.vedatv.app.ui.screens.PlaylistsScreen(
                 onOpenPlaylist = { playlistId ->
                     navController.navigate("channels/$playlistId")
                 }

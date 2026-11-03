@@ -11,5 +11,8 @@ data class ChannelEntity(
     val group: String,
     val logo: String,
     val url: String,
-    val isFavorite: Boolean = false
+    val country: String = "",
+    val language: String = "",
+    val isFavorite: Boolean = false,
+    val lastWatchedAt: Long = 0
 )
