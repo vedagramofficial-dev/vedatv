@@ -15,6 +15,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
+import androidx.compose.material.icons.filled.GridOn
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -47,7 +48,8 @@ import com.vedatv.app.ui.viewmodels.ChannelsViewModel
 fun ChannelsScreen(
     playlistId: Long,
     onBack: () -> Unit,
-    onPlayChannel: (String, String) -> Unit,
+    onOpenGroups: () -> Unit,
+    onPlayChannel: (ChannelEntity) -> Unit,
     viewModel: ChannelsViewModel = viewModel()
 ) {
     val channels by viewModel.channels
@@ -87,6 +89,9 @@ fun ChannelsScreen(
                     }
                 },
                 actions = {
+                    IconButton(onClick = onOpenGroups) {
+                        Icon(Icons.Default.GridOn, contentDescription = "Группы")
+                    }
                     IconButton(onClick = { showFavoritesOnly = !showFavoritesOnly }) {
                         Icon(
                             imageVector = if (showFavoritesOnly) {
@@ -147,7 +152,7 @@ fun ChannelsScreen(
                 items(visibleChannels, key = { it.id }) { channel ->
                     ChannelCard(
                         channel = channel,
-                        onClick = { onPlayChannel(channel.name, channel.url) },
+                        onClick = { onPlayChannel(channel) },
                         onFavoriteClick = { viewModel.toggleFavorite(channel) }
                     )
                 }
