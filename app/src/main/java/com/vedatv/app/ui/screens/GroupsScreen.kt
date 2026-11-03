@@ -44,7 +44,7 @@ fun GroupsScreen(
 
     val groups = channels
         .groupBy { it.group }
-        .map { (group, list) -> group to list.size }
+        .map { (group, channelList) -> group to channelList.size }
         .sortedBy { it.first }
 
     Scaffold(

@@ -65,7 +65,7 @@ fun VedaTvApp() {
             arguments = listOf(navArgument("playlistId") { type = NavType.LongType })
         ) { entry ->
             val playlistId = entry.arguments?.getLong("playlistId") ?: return@composable
-            com.vedatv.app.ui.screens.GroupsScreen(
+            GroupsScreen(
                 playlistId = playlistId,
                 onBack = { navController.popBackStack() },
                 onOpenGroup = { group ->

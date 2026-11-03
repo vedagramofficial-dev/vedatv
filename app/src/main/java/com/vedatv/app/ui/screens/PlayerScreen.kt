@@ -41,7 +41,6 @@ import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.ui.PlayerView
-import com.vedatv.app.data.db.EpgProgramEntity
 import com.vedatv.app.ui.viewmodels.EpgViewModel
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -221,7 +220,7 @@ fun PlayerScreen(
                     contentPadding = PaddingValues(16.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    items(programs) { program ->
+                    items(programs, key = { it.id }) { program ->
                         ProgramCard(
                             program = program,
                             onWatchFromStart = {
@@ -237,7 +236,7 @@ fun PlayerScreen(
 
 @Composable
 private fun ProgramCard(
-    program: EpgProgramEntity,
+    program: com.vedatv.app.data.db.EpgProgramEntity,
     onWatchFromStart: () -> Unit
 ) {
     Card(modifier = Modifier.fillMaxWidth()) {

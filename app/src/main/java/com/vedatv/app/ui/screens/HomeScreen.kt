@@ -40,7 +40,7 @@ import com.vedatv.app.ui.viewmodels.HomeViewModel
 fun HomeScreen(
     onOpenPlaylist: (Long) -> Unit,
     onAddPlaylist: () -> Unit,
-    onPlayChannel: (String, String) -> Unit,
+    onPlayChannel: (ChannelEntity) -> Unit,
     viewModel: HomeViewModel = viewModel()
 ) {
     val playlists by viewModel.playlists
@@ -72,7 +72,7 @@ fun HomeScreen(
                         ) {
                             items(recent, key = { it.id }) { channel ->
                                 ChannelTile(channel = channel, onClick = {
-                                    onPlayChannel(channel.name, channel.url)
+                                    onPlayChannel(channel)
                                 })
                             }
                         }
@@ -88,7 +88,7 @@ fun HomeScreen(
                         ) {
                             items(favorites, key = { it.id }) { channel ->
                                 ChannelTile(channel = channel, onClick = {
-                                    onPlayChannel(channel.name, channel.url)
+                                    onPlayChannel(channel)
                                 })
                             }
                         }

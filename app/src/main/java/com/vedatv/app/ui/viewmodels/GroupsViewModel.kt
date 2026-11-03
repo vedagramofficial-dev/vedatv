@@ -6,9 +6,11 @@ import androidx.lifecycle.viewModelScope
 import com.vedatv.app.VedaTvApp
 import com.vedatv.app.data.db.ChannelEntity
 import com.vedatv.app.data.repository.IptvRepository
-import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.launch
 
 class GroupsViewModel(application: Application) : AndroidViewModel(application) {
 
@@ -18,12 +20,12 @@ class GroupsViewModel(application: Application) : AndroidViewModel(application) 
         epgDao = application.database.epgDao()
     )
 
-    private val playlistId = androidx.compose.runtime.mutableStateOf(0L)
+    private val _channels = MutableStateFlow<List<ChannelEntity>>(emptyList())
+    val channels: StateFlow<List<ChannelEntity>> = _channels
 
-    val channels: StateFlow<List<ChannelEntity>> = repository.observeChannels(playlistId.value)
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
-
-    fun load(id: Long) {
-        playlistId.value = id
+    fun load(playlistId: Long) {
+        repository.observeChannels(playlistId)
+            .onEach { _channels.value = it }
+            .launchIn(viewModelScope)
     }
 }

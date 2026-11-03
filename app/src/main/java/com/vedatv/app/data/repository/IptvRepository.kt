@@ -26,6 +26,9 @@ class IptvRepository(
     fun observeChannels(playlistId: Long): Flow<List<ChannelEntity>> =
         channelDao.observeChannels(playlistId)
 
+    fun searchChannels(playlistId: Long, query: String): Flow<List<ChannelEntity>> =
+        channelDao.searchChannels(playlistId, query)
+
     fun observeFavorites(): Flow<List<ChannelEntity>> = channelDao.observeFavorites()
 
     fun observeRecentlyWatched(): Flow<List<ChannelEntity>> =

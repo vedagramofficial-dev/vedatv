@@ -47,7 +47,7 @@ fun PlaylistsScreen(
     onOpenPlaylist: (Long) -> Unit,
     viewModel: PlaylistsViewModel = viewModel()
 ) {
-    val context = LocalContext.current
+    val context = androidx.compose.ui.platform.LocalContext.current
     val playlists by viewModel.playlists
     var showAddDialog by remember { mutableStateOf(false) }
 

@@ -8,6 +8,8 @@ import com.vedatv.app.data.db.ChannelEntity
 import com.vedatv.app.data.repository.IptvRepository
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
@@ -20,8 +22,8 @@ class ChannelsViewModel(application: Application) : AndroidViewModel(application
         epgDao = application.database.epgDao()
     )
 
-    private val _channels = androidx.compose.runtime.mutableStateOf<List<ChannelEntity>>(emptyList())
-    val channels: androidx.compose.runtime.State<List<ChannelEntity>> = _channels
+    private val _channels = MutableStateFlow<List<ChannelEntity>>(emptyList())
+    val channels: StateFlow<List<ChannelEntity>> = _channels
 
     private var currentJob: Job? = null
 
